@@ -1,0 +1,391 @@
+
+//CÓDIGO 1 COMEÇA AQUI
+
+//EXECUÇÃO DE THREAD USANDO INTERFACES
+
+//A classe MyRunnable implementa a interface Runnable
+
+public class MyRunnable implements Runnable {
+
+// O  método run contém o código que será executado na nova thread
+@Override
+public void run () {
+//imprime uma mensagem indicando a execução da primeira thread
+System.out.println ("Execução da primeira thread");
+	}
+
+}
+
+
+public class Main {
+	public static void main (String[] args) {
+// cria uma nova instãncia da classe MyRunnable
+
+MyRunnable runnable = new MyRunnable ();
+
+//cria a instância de uma nova thread e "passa" a instância MyRunnable como argumento
+Thread thread = new Thread(runnable);
+
+//início da primeira thread
+thread.start();
+
+//imprime uma mensagem indicando a execução da thread principal
+
+System.out.println("Executando na thread principal");
+https://dontpad.com/lp3a5profwendel
+	}
+}
+
+
+
+
+//CÓDIGO 1 TERMINA AQUI
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+// CÓDIGO 2 - SINCRONIZANDO THREADS
+public class Main {
+    public static void main (String[] args) {
+// cria uma nova instãncia da classe MyRunnable
+
+        MyRunnable runnable = new MyRunnable();
+
+//cria a instância de uma nova thread e "passa" a instância MyRunnable como argumento
+        Thread thread = new Thread(runnable);
+
+//início da primeira thread
+                thread.start();
+
+//imprime uma mensagem indicando a execução da thread principal
+
+        System.out.println("Executando na thread principal");
+
+    }
+}
+public class ExemploSincronização {
+
+    // Variavel compartilhada que pode ser acessada por multiplas threads
+    static int count = 0;
+
+    public static void main(String[] args) {
+        // Criação de duas threads que irão acessas a variável compartilhada "count"
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                incrementCount();
+            }
+        });
+
+        Thread thread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                incrementCount();
+            }
+        });
+
+        // Inicialização das duas threads
+        thread1.start();
+        thread2.start();
+
+        // A thread principal aguarda as "threads" filhas terminarem
+        try {
+            thread1.join();
+            thread2.join();
+        } 
+catch (InterruptedException e) 
+	{
+            e.printStackTrace();
+        }
+
+        // O valor final da variável count é exibido
+        System.out.println("Final count: "   + count);
+    }
+
+    // Esse método incrementa o valor da variável compartiilhada "count"
+    // A palavra reservada synchronized assegura que somenta uma thread pode ser acessar esse método por vez
+    private static synchronized void incrementCount() {
+        for (int i = 0; i < 10000; i++   ) {
+            count++  ;
+
+
+        }
+    }
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+// AULA SEMANA 06/03
+
+
+// CÓDIGO 1 - RACE CONDITIONS
+
+package LP3A5;
+
+public class THREADS {
+
+	public static void main(String[] args) throws InterruptedException {
+		// TODO Auto-generated method stub
+		class Counter {
+		    private int value;
+
+		    public void increment() {
+		        value++;
+		    }
+
+		    public int getValue() {
+		        return value;
+		    }
+		}
+
+		// ...
+
+		Counter counter = new Counter();
+
+		Runnable task = () -> {
+		    for (int i = 0; i < 1000; i++) {
+		        counter.increment();
+		    }
+		};
+
+		Thread thread1 = new Thread(task);
+		Thread thread2 = new Thread(task);
+
+		thread1.start();
+		thread2.start();
+
+		thread1.join();
+		thread2.join();
+
+		System.out.println(counter.getValue()); // resultado esperado é 2000, mas pode variar
+
+
+	}
+}
+
+
+// CORRIGINDO RACE CONDITIONS
+
+public class THREADS {
+
+class Counter {
+    private int value;
+
+    public synchronized void increment() {
+        value++;
+    }
+
+    public int getValue() {
+        return value;
+    }
+}
+
+// ...
+
+Counter counter = new Counter();
+
+Runnable task = () -> {
+    for (int i = 0; i < 1000; i++) {
+        counter.increment();
+    }
+};
+
+Thread thread1 = new Thread(task);
+Thread thread2 = new Thread(task);
+
+thread1.start();
+thread2.start();
+
+thread1.join();
+thread2.join();
+
+System.out.println(counter.getValue()); // resultado esperado é 2000
+
+	}
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+// CÓDIGO 2  - SIMULAÇÃO DE UM DEADLOCK
+	
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class DeadlockSimulation {
+    private final Lock lock1 = new ReentrantLock(); // Cria dois objetos Lock
+    private final Lock lock2 = new ReentrantLock();
+
+    public void method1() {
+        lock1.lock(); // Adquire o lock 1
+        System.out.println("Method 1 adquiriu lock 1");
+
+        try {
+            Thread.sleep(1000); // Espera um segundo
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        lock2.lock(); // Adquire o lock 2
+        System.out.println("Method 1 adquiriu lock 2");
+
+        lock2.unlock(); // Libera o lock 2
+        System.out.println("Method 1 liberou lock 2");
+
+        lock1.unlock(); // Libera o lock 1
+        System.out.println("Method 1 liberou lock 1");
+    }
+
+    public void method2() {
+        lock2.lock(); // Adquire o lock 2
+        System.out.println("Method 2 adquiriu lock 2");
+
+        try {
+            Thread.sleep(1000); // Espera um segundo
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        lock1.lock(); // Adquire o lock 1
+        System.out.println("Method 2 adquiriu lock 1");
+
+        lock1.unlock(); // Libera o lock 1
+        System.out.println("Method 2 liberou lock 1");
+
+        lock2.unlock(); // Libera o lock 2
+        System.out.println("Method 2 liberou lock 2");
+    }
+
+    public static void main(String[] args) {
+        DeadlockSimulation simulation = new DeadlockSimulation();
+
+        Thread thread1 = new Thread(() -> {
+            simulation.method1();
+        });
+
+        Thread thread2 = new Thread(() -> {
+            simulation.method2();
+        });
+
+        thread1.start();
+        thread2.start();
+    }
+}
+
+
+
+CÓDIGO 2  - CORREÇÃO DE UM DEADLOCK
+	
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class DeadlockSimulation {
+    private final Lock lock1 = new ReentrantLock(); // Cria dois objetos Lock
+    private final Lock lock2 = new ReentrantLock();
+
+    public void method1() {
+        boolean lock1Acquired = false;
+        boolean lock2Acquired = false;
+
+        while (true) {
+            try {
+                lock1Acquired = lock1.tryLock(); // Tenta adquirir o lock 1
+                if (lock1Acquired) {
+                    System.out.println("Method 1 acquired lock 1");
+                    lock2Acquired = lock2.tryLock(); // Tenta adquirir o lock 2
+                    if (lock2Acquired) {
+                        System.out.println("Method 1 acquired lock 2");
+                        break; // Sai do loop se adquiriu os dois locks
+                    }
+                }
+            } finally {
+                if (!lock2Acquired && lock1Acquired) {
+                    lock1.unlock(); // Libera o lock 1 se não adquiriu o lock 2
+                    System.out.println("Method 1 released lock 1");
+                }
+            }
+            try {
+                Thread.sleep(100); // Espera um pouco antes de tentar novamente
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        lock2.unlock(); // Libera o lock 2
+        System.out.println("Method 1 released lock 2");
+
+        lock1.unlock(); // Libera o lock 1
+        System.out.println("Method 1 released lock 1");
+    }
+
+    public void method2() {
+        boolean lock1Acquired = false;
+        boolean lock2Acquired = false;
+
+        while (true) {
+            try {
+                lock2Acquired = lock2.tryLock(); // Tenta adquirir o lock 2
+                if (lock2Acquired) {
+                    System.out.println("Method 2 acquired lock 2");
+                    lock1Acquired = lock1.tryLock(); // Tenta adquirir o lock 1
+                    if (lock1Acquired) {
+                        System.out.println("Method 2 acquired lock 1");
+                        break; // Sai do loop se adquiriu os dois locks
+                    }
+                }
+            } finally {
+                if (!lock1Acquired && lock2Acquired) {
+                    lock2.unlock(); // Libera o lock 2 se não adquiriu o lock 1
+                    System.out.println("Method 2 released lock 2");
+                }
+            }
+            try {
+                Thread.sleep(100); // Espera um pouco antes de tentar novamente
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        lock1.unlock(); // Libera o lock 1
+        System.out.println("Method 2 released lock 1");
+
+        lock2.unlock(); // Libera o lock 2
+        System.out.println("Method 2 released lock 2");
+    }
+
+    public static void main(String[] args) {
+        DeadlockSimulation simulation = new DeadlockSimulation();
+
+        Thread thread1 = new Thread(() -> {
+            simulation.method1();
+        });
+
+        Thread thread2 = new Thread(() -> {
+            simulation.method2();
+        });
+
+        thread1.start();
+        thread2.start();
+    }
+}
+
+
+EXERCÍCIO 1
+
+O programa deve criar uma variável inteira compartilhada e iniciar duas threads que tentam incrementar o valor dessa variável em um loop. Cada thread deve incrementar o valor da variável várias vezes em sequência, e o resultado final esperado é a soma do número de incrementos de ambas as threads. No entanto, como as threads compartilham a mesma variável e não há sincronização adequada, é possível que ocorra uma condição de corrida, em que as threads executam em uma ordem imprevisível e o resultado final não corresponde à soma dos incrementos.
+
+O programa deve ser implementado de preferência (não necessariamente) com o uso da interface Runnable e deve utilizar mecanismos de sincronização adequados para evitar a condição de corrida. O resultado final esperado deve ser a soma do número de incrementos das duas threads.
+
+EXERCÍCIO 2
+
+Crie um programa em Java que simule um deadlock entre três threads e implemente uma solução para resolver o deadlock (eventualmente pode ser feito um programa apresentando o deadlock e outro solucionando o problema).
+
+O programa deve criar três threads que tentam adquirir locks em três objetos diferentes. Cada thread deve adquirir o lock do objeto A e tentar adquirir o lock do objeto B, enquanto outra thread tenta adquirir o lock do objeto B e o lock do objeto C, e a última thread tenta adquirir o lock do objeto C e o lock do objeto A. Se não houver sincronização adequada, as três threads podem entrar em um estado de deadlock, em que cada uma espera que a outra libere o lock para poder continuar sua execução.
+
+
+
+								 
+
